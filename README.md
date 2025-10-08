@@ -29,7 +29,6 @@ LLM（大規模言語モデル）にデータを与える際、単純なCSV形�
         * `index.html`
         * `javascript.html`
         * `stylesheet.html`
-    * `ファイル` > `新規作成` > `JSON ファイル` を選択し、`appsscript.json` を作成して後述のスニペットを貼り付けます。
 
 3.  **Webアプリケーションとしてデプロイ**
     * GASエディタ右上の **`デプロイ`** ボタンをクリックし、**`新しいデプロイ`** を選択します。
@@ -57,12 +56,12 @@ LLM（大規模言語モデル）にデータを与える際、単純なCSV形�
 ├── Code.gs             # サーバーサイドロジック (GAS)
 ├── javascript.html     # フロントエンドロジック (JavaScript)
 ├── index.html          # アプリケーションの基本構造 (HTML)
-├── stylesheet.html     # アプリケーションのスタイル (CSS)
-└── appsscript.json     # プロジェクトのマニフェストファイル
+└── stylesheet.html     # アプリケーションのスタイル (CSS)
 ```
 
 ---
 
 ## 📄 ライセンス (License)
+
 
 このプロジェクトは [MIT License](LICENSE) の下で公開されています。

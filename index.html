@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= css; ?>
+</head>
+<body>
+  <div class="container">
+    <h1>CsvToMarkdownKV 変換ツール ⚙️</h1>
+    <p>複数のCSV/TSVファイルをアップロードし、出力形式を選択してください。</p>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="file-input">1. ファイルを選択 (複数可)</label>
+        <input type="file" id="file-input" accept=".csv,.tsv,.txt" multiple>
+      </div>
+
+      <div class="form-group">
+        <label>2. 出力形式を選択</label>
+        <div class="radio-group">
+          <input type="radio" id="format-markdown" name="output-format" value="markdown" checked>
+          <label for="format-markdown">Markdown KV</label>
+
+          <input type="radio" id="format-yaml" name="output-format" value="yaml">
+          <label for="format-yaml">YAML</label>
+
+          <input type="radio" id="format-xml" name="output-format" value="xml">
+          <label for="format-xml">XML</label>
+        </div>
+      </div>
+
+      <button id="convert-btn">変換してダウンロード</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <?!= js; ?>
+</body>
+</html>

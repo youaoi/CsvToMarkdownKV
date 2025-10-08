@@ -1,0 +1,112 @@
+<script>
+  /**
+   * @fileoverview CsvToMarkdownKV Webアプリケーションのクライアントサイドロジック。
+   * DOMの読み込み完了後にイベントリスナーを設定し、ユーザー操作を処理します。
+   */
+
+  /**
+   * DOMの読み込みが完了した時点で、変換ボタンにクリックイベントリスナーを設定します。
+   */
+  document.addEventListener('DOMContentLoaded', (event) => {
+    document.getElementById('convert-btn').addEventListener('click', handleConvert);
+  });
+
+  /**
+   * 「変換してダウンロード」ボタンがクリックされた際のメイン処理。
+   * 選択されたファイルをBase64形式で読み込み、サーバーサイドの`convertFiles`関数を呼び出します。
+   * @returns {Promise<void>}
+   */
+  async function handleConvert() {
+    const fileInput = document.getElementById('file-input');
+    const files = fileInput.files;
+    const selectedFormat = document.querySelector('input[name="output-format"]:checked').value;
+    const statusDiv = document.getElementById('status');
+    
+    if (files.length === 0) {
+      statusDiv.textContent = '⚠️ ファイルが選択されていません。';
+      statusDiv.className = 'status error';
+      return;
+    }
+    
+    statusDiv.textContent = `変換中です... (${files.length} ファイル)`;
+    statusDiv.className = 'status info';
+    document.getElementById('convert-btn').disabled = true;
+
+    const filePromises = Array.from(files).map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const dataUrl = e.target.result;
+          const base64Content = dataUrl.substring(dataUrl.indexOf(',') + 1);
+          resolve({ filename: file.name, base64Content: base64Content });
+        };
+        reader.onerror = e => reject(e);
+        reader.readAsDataURL(file); // ファイルをBase64エンコードされたData URLとして読み込む
+      });
+    });
+
+    try {
+      const fileDataArray = await Promise.all(filePromises);
+      google.script.run
+        .withSuccessHandler(onConversionSuccess)
+        .withFailureHandler(onConversionFailure)
+        .convertFiles(fileDataArray, selectedFormat);
+    } catch (error) {
+      onConversionFailure(error);
+    }
+  }
+
+  /**
+   * サーバーでの変換処理が成功した際のコールバック関数。
+   * 結果に応じて、ファイルをダウンロードするかエラーメッセージを表示します。
+   * @param {Array<Object>|Object} result サーバーから返された結果。成功時はファイル情報の配列、失敗時はエラー情報を持つオブジェクト。
+   */
+  function onConversionSuccess(result) {
+    const statusDiv = document.getElementById('status');
+    document.getElementById('convert-btn').disabled = false;
+
+    if (result.error) {
+      statusDiv.innerHTML = `❌ エラー:<br>${result.error.replace(/\n/g, '<br>')}`;
+      statusDiv.className = 'status error';
+      console.error("サーバーからエラーが返されました:", result.error);
+      return;
+    }
+
+    for (const file of result) {
+      triggerDownload(file.fileContent, file.filename);
+    }
+    
+    statusDiv.textContent = `✅ ${result.length} ファイルの変換が完了し、ダウンロードを開始しました。`;
+    statusDiv.className = 'status success';
+  }
+
+  /**
+   * サーバーとの通信自体が失敗した際のコールバック関数。
+   * @param {Error} error 発生したエラーオブジェクト。
+   */
+  function onConversionFailure(error) {
+    const statusDiv = document.getElementById('status');
+    document.getElementById('convert-btn').disabled = false;
+    const errorMessage = `❌ 予期せぬ通信エラーが発生しました: ${error.message}`;
+    statusDiv.textContent = errorMessage;
+    statusDiv.className = 'status error';
+    console.error("予期せぬ通信エラー:", error);
+  }
+
+  /**
+   * 受け取ったファイルコンテンツをクライアントサイドでダウンロードさせるためのヘルパー関数。
+   * @param {string} content ダウンロードするファイルの中身。
+   * @param {string} filename ダウンロード時のファイル名。
+   */
+  function triggerDownload(content, filename) {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+</script>

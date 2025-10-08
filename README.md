@@ -1,0 +1,2 @@
+# CsvToMarkdownKV
+LLMがデータを利用する際に、CSVファイルを学習ソースとして与えるより、KeyValueで記載されたデータの方が精度が高くなるらしいので、Win/Macで利用できるscriptを作成
